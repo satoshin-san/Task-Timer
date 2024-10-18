@@ -1,4 +1,3 @@
-# Task-Timer
 import tkinter as tk
 from tkinter import ttk
 import time
@@ -243,8 +242,24 @@ class TaskManager:
 
         # キーボード操作のバインド
         self.target_time_entry.bind('<Return>', lambda event: self.start_timer())
-        # 修正: bind_all から bind に変更
         self.root.bind('<Delete>', self.handle_key_event)
+        self.root.bind('<space>', self.handle_key_event)  # スペースキーのバインドを追加
+
+    def handle_key_event(self, event):
+        focused_widget = self.root.focus_get()
+        if event.keysym == 'Delete':
+            if isinstance(focused_widget, ttk.Button):
+                # ボタンがフォーカスされている場合はデフォルトの動作を許可
+                return
+            else:
+                self.complete_task()
+                return 'break'  # デフォルトの動作を防ぐ
+        elif event.keysym == 'space':
+            if isinstance(focused_widget, ttk.Button):
+                # フォーカスされたボタンを押す
+                focused_widget.invoke()
+                return 'break'  # デフォルトの動作を防ぐ
+
 
         # ウィンドウクローズイベントにバインド
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -253,15 +268,6 @@ class TaskManager:
         self.root.focus_get().tk_focusNext().focus()
         return 'break'
 
-    def handle_key_event(self, event):
-        if event.keysym == 'Delete':
-            focused_widget = self.root.focus_get()
-            if isinstance(focused_widget, ttk.Button):
-                # ボタンがフォーカスされている場合はデフォルトの動作を許可
-                return
-            else:
-                self.complete_task()
-                return 'break'  # デフォルトの動作を防ぐ
 
     def add_batch_tasks(self):
         tasks_text = self.batch_entry.get("1.0", tk.END).strip()
